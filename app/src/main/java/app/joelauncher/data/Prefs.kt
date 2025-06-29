@@ -1,4 +1,4 @@
-package app.olauncher.data
+package app.joelauncher.data
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -27,7 +27,7 @@ class Prefs(context: Context) {
     private val DATE_TIME_VISIBILITY = "DATE_TIME_VISIBILITY"
     private val SWIPE_LEFT_ENABLED = "SWIPE_LEFT_ENABLED"
     private val SWIPE_RIGHT_ENABLED = "SWIPE_RIGHT_ENABLED"
-    private val HIDDEN_APPS = "HIDDEN_APPS"
+    private val VISIBLE_APPS = "VISIBLE_APPS"
     private val HIDDEN_APPS_UPDATED = "HIDDEN_APPS_UPDATED"
     private val SHOW_HINT_COUNTER = "SHOW_HINT_COUNTER"
     private val APP_THEME = "APP_THEME"
@@ -183,10 +183,12 @@ class Prefs(context: Context) {
         get() = prefs.getLong(SCREEN_TIME_LAST_UPDATED, 0L)
         set(value) = prefs.edit().putLong(SCREEN_TIME_LAST_UPDATED, value).apply()
 
-    var hiddenApps: MutableSet<String>
-        get() = prefs.getStringSet(HIDDEN_APPS, mutableSetOf()) as MutableSet<String>
-        set(value) = prefs.edit().putStringSet(HIDDEN_APPS, value).apply()
+    var visibleApps: MutableSet<String>
+        get() = prefs.getStringSet(VISIBLE_APPS, mutableSetOf()) as MutableSet<String>
+        set(value) = prefs.edit().putStringSet(VISIBLE_APPS, value).apply()
 
+    //This is a flag to represent whether or not the format of the hidden apps has been updated
+    //to include the user
     var hiddenAppsUpdated: Boolean
         get() = prefs.getBoolean(HIDDEN_APPS_UPDATED, false)
         set(value) = prefs.edit().putBoolean(HIDDEN_APPS_UPDATED, value).apply()

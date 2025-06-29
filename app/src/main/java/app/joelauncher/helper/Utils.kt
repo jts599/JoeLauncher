@@ -1,4 +1,4 @@
-package app.olauncher.helper
+package app.joelauncher.helper
 
 import android.annotation.SuppressLint
 import android.app.SearchManager
@@ -35,11 +35,11 @@ import android.widget.Toast
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatDelegate
-import app.olauncher.BuildConfig
-import app.olauncher.R
-import app.olauncher.data.AppModel
-import app.olauncher.data.Constants
-import app.olauncher.data.Prefs
+import app.joelauncher.BuildConfig
+import app.joelauncher.R
+import app.joelauncher.data.AppModel
+import app.joelauncher.data.Constants
+import app.joelauncher.data.Prefs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -53,6 +53,7 @@ import java.util.Locale
 import java.util.Scanner
 import kotlin.math.pow
 import kotlin.math.sqrt
+import android.content.pm.LauncherActivityInfo
 
 fun Context.showToast(message: String?, duration: Int = Toast.LENGTH_SHORT) {
     if (message.isNullOrBlank()) return
@@ -63,10 +64,17 @@ fun Context.showToast(stringResource: Int, duration: Int = Toast.LENGTH_SHORT) {
     Toast.makeText(this, getString(stringResource), duration).show()
 }
 
+/**
+ * Gathers the apps that should be shown to a user
+ *
+ * @param includeVisibleApps - Includes apps that are explicitly marked as visible
+ * @param includeHiddenApps - Includes apps that are not explicitly marked as visible
+ *
+ */
 suspend fun getAppsList(
     context: Context,
     prefs: Prefs,
-    includeRegularApps: Boolean = true,
+    includeVisibleApps: Boolean = true,
     includeHiddenApps: Boolean = false,
 ): MutableList<AppModel> {
     return withContext(Dispatchers.IO) {
@@ -74,39 +82,24 @@ suspend fun getAppsList(
 
         try {
             if (!Prefs(context).hiddenAppsUpdated) upgradeHiddenApps(Prefs(context))
-            val hiddenApps = Prefs(context).hiddenApps
+            val visibleApps = Prefs(context).visibleApps
 
             val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
             val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
-            val collator = Collator.getInstance()
+
 
             for (profile in userManager.userProfiles) {
                 for (app in launcherApps.getActivityList(null, profile)) {
-
-                    val appLabelShown = prefs.getAppRenameLabel(app.applicationInfo.packageName).ifBlank { app.label.toString() }
-                    val appModel = AppModel(
-                        appLabelShown,
-                        collator.getCollationKey(app.label.toString()),
-                        app.applicationInfo.packageName,
-                        app.componentName.className,
-                        (System.currentTimeMillis() - app.firstInstallTime) < Constants.ONE_HOUR_IN_MILLIS,
-                        profile
+                    addAppToListIfAppropriate(
+                        app,
+                        appList,
+                        prefs,
+                        includeVisibleApps,
+                        includeHiddenApps,
+                        profile,
+                        visibleApps
                     )
 
-                    // if the current app is not OLauncher
-                    if (app.applicationInfo.packageName != BuildConfig.APPLICATION_ID) {
-                        // is this a hidden app?
-                        if (hiddenApps.contains(app.applicationInfo.packageName + "|" + profile.toString())) {
-                            if (includeHiddenApps) {
-                                appList.add(appModel)
-                            }
-                        } else {
-                            // this is a regular app
-                            if (includeRegularApps) {
-                                appList.add(appModel)
-                            }
-                        }
-                    }
                 }
             }
             appList.sortBy { it.appLabel.lowercase() }
@@ -118,16 +111,52 @@ suspend fun getAppsList(
     }
 }
 
+private suspend fun addAppToListIfAppropriate(
+    app : LauncherActivityInfo,
+    appList : MutableList<AppModel>,
+    prefs : Prefs,
+    includeVisibleApps : Boolean,
+    includeHiddenApps : Boolean,
+    user: UserHandle,
+    visibleApps: MutableSet<String>
+){
+    val appLabelShown = prefs.getAppRenameLabel(app.applicationInfo.packageName).ifBlank { app.label.toString() }
+    val collator = Collator.getInstance()
+    val appModel = AppModel(
+        appLabelShown,
+        collator.getCollationKey(app.label.toString()),
+        app.applicationInfo.packageName,
+        app.componentName.className,
+        (System.currentTimeMillis() - app.firstInstallTime) < Constants.ONE_HOUR_IN_MILLIS,
+        user
+    )
+
+    // if the current app is not OLauncher
+    if (app.applicationInfo.packageName != BuildConfig.APPLICATION_ID) {
+        // is this a hidden app?
+        if (visibleApps.contains(app.applicationInfo.packageName + "|" + user.toString())) {
+            if (includeVisibleApps) {
+                appList.add(appModel)
+            }
+        } else {
+            // this is a regular app
+            if (includeHiddenApps) {
+                appList.add(appModel)
+            }
+        }
+    }
+}
+
 // This is to ensure backward compatibility with older app versions
 // which did not support multiple user profiles
 private fun upgradeHiddenApps(prefs: Prefs) {
-    val hiddenAppsSet = prefs.hiddenApps
+    val hiddenAppsSet = prefs.visibleApps
     val newHiddenAppsSet = mutableSetOf<String>()
     for (hiddenPackage in hiddenAppsSet) {
         if (hiddenPackage.contains("|")) newHiddenAppsSet.add(hiddenPackage)
         else newHiddenAppsSet.add(hiddenPackage + android.os.Process.myUserHandle().toString())
     }
-    prefs.hiddenApps = newHiddenAppsSet
+    prefs.visibleApps = newHiddenAppsSet
     prefs.hiddenAppsUpdated = true
 }
 

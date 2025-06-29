@@ -1,10 +1,10 @@
-package app.olauncher.listener
+package app.joelauncher.listener
 
 import android.app.admin.DeviceAdminReceiver
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
-import app.olauncher.R
+import app.joelauncher.R
 
 class DeviceAdmin : DeviceAdminReceiver() {
     fun onEnabled(intent: Intent?, context: Context) {
