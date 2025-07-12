@@ -1,11 +1,10 @@
-package app.olauncher.ui
+package app.joelauncher.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
-import android.widget.TextView
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -13,20 +12,20 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Recycler
-import app.olauncher.MainViewModel
-import app.olauncher.R
-import app.olauncher.data.Constants
-import app.olauncher.data.Prefs
-import app.olauncher.databinding.FragmentAppDrawerBinding
-import app.olauncher.helper.hideKeyboard
-import app.olauncher.helper.isEinkDisplay
-import app.olauncher.helper.isSystemApp
-import app.olauncher.helper.openAppInfo
-import app.olauncher.helper.openSearch
-import app.olauncher.helper.openUrl
-import app.olauncher.helper.showKeyboard
-import app.olauncher.helper.showToast
-import app.olauncher.helper.uninstall
+import app.joelauncher.MainViewModel
+import app.joelauncher.R
+import app.joelauncher.data.Constants
+import app.joelauncher.data.Prefs
+import app.joelauncher.databinding.FragmentAppDrawerBinding
+import app.joelauncher.helper.hideKeyboard
+import app.joelauncher.helper.isEinkDisplay
+import app.joelauncher.helper.isSystemApp
+import app.joelauncher.helper.openAppInfo
+import app.joelauncher.helper.openSearch
+import app.joelauncher.helper.openUrl
+import app.joelauncher.helper.showKeyboard
+import app.joelauncher.helper.showToast
+import app.joelauncher.helper.uninstall
 
 
 class AppDrawerFragment : Fragment() {
@@ -71,8 +70,12 @@ class AppDrawerFragment : Fragment() {
         else if (flag in Constants.FLAG_SET_HOME_APP_1..Constants.FLAG_SET_CALENDAR_APP)
             binding.search.queryHint = "Please select an app"
         try {
+            //This is giving me a build error. Not sure why. Since I do not need the search anyway,
+            //I think I should be ok to comment this out
+            /*
             val searchTextView = binding.search.findViewById<TextView>(R.id.search_src_text)
             if (searchTextView != null) searchTextView.gravity = prefs.appLabelAlignment
+            */
         } catch (e: Exception) {
             e.printStackTrace()
         }

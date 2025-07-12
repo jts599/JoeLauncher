@@ -1,4 +1,4 @@
-package app.olauncher.ui
+package app.joelauncher.ui
 
 import android.app.admin.DevicePolicyManager
 import android.content.Context
@@ -23,27 +23,27 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import app.olauncher.MainViewModel
-import app.olauncher.R
-import app.olauncher.data.AppModel
-import app.olauncher.data.Constants
-import app.olauncher.data.Prefs
-import app.olauncher.databinding.FragmentHomeBinding
-import app.olauncher.helper.appUsagePermissionGranted
-import app.olauncher.helper.dpToPx
-import app.olauncher.helper.expandNotificationDrawer
-import app.olauncher.helper.getChangedAppTheme
-import app.olauncher.helper.getUserHandleFromString
-import app.olauncher.helper.isPackageInstalled
-import app.olauncher.helper.openAlarmApp
-import app.olauncher.helper.openCalendar
-import app.olauncher.helper.openCameraApp
-import app.olauncher.helper.openDialerApp
-import app.olauncher.helper.openSearch
-import app.olauncher.helper.setPlainWallpaperByTheme
-import app.olauncher.helper.showToast
-import app.olauncher.listener.OnSwipeTouchListener
-import app.olauncher.listener.ViewSwipeTouchListener
+import app.joelauncher.MainViewModel
+import app.joelauncher.R
+import app.joelauncher.data.AppModel
+import app.joelauncher.data.Constants
+import app.joelauncher.data.Prefs
+import app.joelauncher.databinding.FragmentHomeBinding
+import app.joelauncher.helper.appUsagePermissionGranted
+import app.joelauncher.helper.dpToPx
+import app.joelauncher.helper.expandNotificationDrawer
+import app.joelauncher.helper.getChangedAppTheme
+import app.joelauncher.helper.getUserHandleFromString
+import app.joelauncher.helper.isPackageInstalled
+import app.joelauncher.helper.openAlarmApp
+import app.joelauncher.helper.openCalendar
+import app.joelauncher.helper.openCameraApp
+import app.joelauncher.helper.openDialerApp
+import app.joelauncher.helper.openSearch
+import app.joelauncher.helper.setPlainWallpaperByTheme
+import app.joelauncher.helper.showToast
+import app.joelauncher.listener.OnSwipeTouchListener
+import app.joelauncher.listener.ViewSwipeTouchListener
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -532,7 +532,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
             override fun onSwipeUp() {
                 super.onSwipeUp()
-                showAppList(Constants.FLAG_LAUNCH_APP)
+                //showAppList(Constants.FLAG_LAUNCH_APP)
             }
 
             override fun onSwipeDown() {
@@ -579,7 +579,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
             override fun onSwipeUp() {
                 super.onSwipeUp()
-                showAppList(Constants.FLAG_LAUNCH_APP)
+                //showAppList(Constants.FLAG_LAUNCH_APP)
             }
 
             override fun onSwipeDown() {

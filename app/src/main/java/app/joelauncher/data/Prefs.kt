@@ -1,4 +1,4 @@
-package app.olauncher.data
+package app.joelauncher.data
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -187,6 +187,8 @@ class Prefs(context: Context) {
         get() = prefs.getStringSet(HIDDEN_APPS, mutableSetOf()) as MutableSet<String>
         set(value) = prefs.edit().putStringSet(HIDDEN_APPS, value).apply()
 
+    //This is a flag to represent whether or not the format of the hidden apps has been updated
+    //to include the user
     var hiddenAppsUpdated: Boolean
         get() = prefs.getBoolean(HIDDEN_APPS_UPDATED, false)
         set(value) = prefs.edit().putBoolean(HIDDEN_APPS_UPDATED, value).apply()

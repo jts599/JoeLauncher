@@ -1,4 +1,4 @@
-package app.olauncher.ui
+package app.joelauncher.ui
 
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
@@ -20,25 +20,25 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import app.olauncher.BuildConfig
-import app.olauncher.MainViewModel
-import app.olauncher.R
-import app.olauncher.data.Constants
-import app.olauncher.data.Prefs
-import app.olauncher.databinding.FragmentSettingsBinding
-import app.olauncher.helper.animateAlpha
-import app.olauncher.helper.appUsagePermissionGranted
-import app.olauncher.helper.getColorFromAttr
-import app.olauncher.helper.isAccessServiceEnabled
-import app.olauncher.helper.isDarkThemeOn
-import app.olauncher.helper.isOlauncherDefault
-import app.olauncher.helper.openAppInfo
-import app.olauncher.helper.openUrl
-import app.olauncher.helper.rateApp
-import app.olauncher.helper.setPlainWallpaper
-import app.olauncher.helper.shareApp
-import app.olauncher.helper.showToast
-import app.olauncher.listener.DeviceAdmin
+import app.joelauncher.BuildConfig
+import app.joelauncher.MainViewModel
+import app.joelauncher.R
+import app.joelauncher.data.Constants
+import app.joelauncher.data.Prefs
+import app.joelauncher.databinding.FragmentSettingsBinding
+import app.joelauncher.helper.animateAlpha
+import app.joelauncher.helper.appUsagePermissionGranted
+import app.joelauncher.helper.getColorFromAttr
+import app.joelauncher.helper.isAccessServiceEnabled
+import app.joelauncher.helper.isDarkThemeOn
+import app.joelauncher.helper.isOlauncherDefault
+import app.joelauncher.helper.openAppInfo
+import app.joelauncher.helper.openUrl
+import app.joelauncher.helper.rateApp
+import app.joelauncher.helper.setPlainWallpaper
+import app.joelauncher.helper.shareApp
+import app.joelauncher.helper.showToast
+import app.joelauncher.listener.DeviceAdmin
 
 class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListener {
 
