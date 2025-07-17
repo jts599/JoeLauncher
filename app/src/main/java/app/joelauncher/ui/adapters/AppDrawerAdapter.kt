@@ -1,4 +1,4 @@
-package app.joelauncher.ui
+package app.joelauncher.ui.adapters
 
 import android.content.Context
 import android.os.UserHandle

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="8dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginBottom="4dp"
+    app:cardElevation="2dp"
+    app:cardCornerRadius="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical">
+
+        <!-- Optional: An icon for the profile -->
+        <!-- <ImageView
+            android:id="@+id/imageViewProfileIcon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="16dp"
+            app:srcCompat="@drawable/ic_profile_default" /> You'd need a default profile icon -->
+
+        <TextView
+            android:id="@+id/textViewProfileName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            tools:text="My Gaming Profile" />
+
+        <!-- Optional: An indicator for active status, or other info -->
+        <!-- <ImageView
+            android:id="@+id/imageViewProfileStatus"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="8dp"
+            tools:srcCompat="@drawable/ic_status_active" /> -->
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

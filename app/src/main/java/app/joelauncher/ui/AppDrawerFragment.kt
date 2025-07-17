@@ -26,6 +26,7 @@ import app.joelauncher.helper.openUrl
 import app.joelauncher.helper.showKeyboard
 import app.joelauncher.helper.showToast
 import app.joelauncher.helper.uninstall
+import app.joelauncher.ui.adapters.AppDrawerAdapter
 
 
 class AppDrawerFragment : Fragment() {

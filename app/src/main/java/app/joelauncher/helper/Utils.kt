@@ -34,13 +34,17 @@ import android.view.animation.LinearInterpolator
 import android.widget.Toast
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatDelegate
 import app.joelauncher.BuildConfig
 import app.joelauncher.R
 import app.joelauncher.data.AppModel
 import app.joelauncher.data.Constants
 import app.joelauncher.data.Prefs
+import app.joelauncher.data.profiles.Profile
+import app.joelauncher.data.profiles.ProfilesDatabase
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.InputStream
@@ -53,6 +57,9 @@ import java.util.Locale
 import java.util.Scanner
 import kotlin.math.pow
 import kotlin.math.sqrt
+import java.time.Clock
+import java.time.LocalDate
+import java.time.LocalTime
 
 fun Context.showToast(message: String?, duration: Int = Toast.LENGTH_SHORT) {
     if (message.isNullOrBlank()) return
@@ -61,6 +68,133 @@ fun Context.showToast(message: String?, duration: Int = Toast.LENGTH_SHORT) {
 
 fun Context.showToast(stringResource: Int, duration: Int = Toast.LENGTH_SHORT) {
     Toast.makeText(this, getString(stringResource), duration).show()
+}
+
+enum class FilterOption {
+    AllVisible,
+    AllHidden,
+    ProfileBasedFilter
+}
+
+
+@RequiresApi(Build.VERSION_CODES.O)
+suspend fun getAppsList(context: Context, prefs: Prefs, filterOption: FilterOption): MutableList<AppModel> {
+    return withContext(Dispatchers.IO) {
+        var appList: MutableList<AppModel>? = null;
+        when (filterOption) {
+            FilterOption.AllVisible -> appList = getAppsList(context, prefs, includeRegularApps = true, includeHiddenApps = false)
+            FilterOption.AllHidden -> appList = getAppsList(context, prefs, includeRegularApps = false, includeHiddenApps = true)
+            FilterOption.ProfileBasedFilter -> {
+                appList = getAppsList(context, prefs, includeRegularApps = true, includeHiddenApps = false)
+                val allowedApps = loadProfileAllowedApps(context)
+                return@withContext applyProfileFilter(appList, allowedApps)
+            }
+        }
+        appList
+    }
+}
+
+
+
+suspend fun loadProfileOverridesThatApply(context: Context): MutableList<Long> {
+    return withContext(Dispatchers.IO) {
+        val profilesDatabase= ProfilesDatabase.getDatabase(context)
+        val activeProfiles: MutableList<Long> = mutableListOf()
+        val profilesData= profilesDatabase.profileDao().loadProfileOverridesThatApply(System.currentTimeMillis())
+        for (profile in profilesData) {
+            activeProfiles.add(profile.profileOwnerId)
+        }
+        activeProfiles
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+suspend fun  gatherAllActiveProfiles(context: Context): MutableList<Long> {
+    return withContext(Dispatchers.IO) {
+        val profilesDatabase= ProfilesDatabase.getDatabase(context)
+        val activeProfiles: MutableList<Long> = mutableListOf()
+        profilesDatabase.profileDao().getAllProfiles().collect { profilesList ->
+
+            for (profile in profilesList) {
+                if (profileIsActiveBasedOnCurrentTime(profile)){
+                    activeProfiles.add(profile.profileId)
+                    continue
+                }
+            }
+        }
+        activeProfiles
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+suspend fun isProfileActive(context: Context, profileId: Long): Boolean {
+    return withContext(Dispatchers.IO) {
+        val profilesDatabase= ProfilesDatabase.getDatabase(context)
+        val profile= profilesDatabase.profileDao().getProfileById(profileId)
+        val overrideActiveProfiles = loadProfileOverridesThatApply(context)
+        if (profile == null){
+            return@withContext false
+        }
+        if (profileIsActiveBasedOnCurrentTime(profile)){
+            return@withContext true
+        }
+        if (profileIsActiveByOverride(overrideActiveProfiles,profile)){
+            return@withContext true
+        }
+        return@withContext false
+    }
+}
+
+private fun isDayOfWeekIncluded(profile: Profile, currentDayOfWeek: Int): Boolean {
+    return profile.repeatDays.or(1L shl currentDayOfWeek) > 0
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+private fun profileIsActiveBasedOnCurrentTime(profile: Profile): Boolean {
+    val currentTimeOfDay = LocalTime.now().toSecondOfDay()
+    val currentDayOfWeek = LocalDate.now().dayOfWeek
+    if (!isDayOfWeekIncluded(profile, currentDayOfWeek.ordinal)) {
+        return false
+    }
+    if (currentTimeOfDay < profile.startTime || currentTimeOfDay > profile.endTime) {
+        return false
+    }
+    return true
+}
+
+private fun profileIsActiveByOverride(overrideActiveProfiles: MutableList<Long>, profile: Profile): Boolean {
+    return profile.profileId in overrideActiveProfiles
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+suspend fun loadProfileAllowedApps(context: Context): MutableSet<String> {
+    return withContext(Dispatchers.IO) {
+        val activeProfiles: MutableList<Long> = mutableListOf() // Stubbed for now. This will be loaded from the database
+        activeProfiles.addAll(loadProfileOverridesThatApply(context))
+        activeProfiles.addAll(gatherAllActiveProfiles(context))
+
+        val profilesDatabase= ProfilesDatabase.getDatabase(context)
+        val allowedAppPackageNames = mutableSetOf<String>()
+        for (profile in activeProfiles) {
+            val allowedAppsForProfile = profilesDatabase.profileDao().getAllowedAppsForProfile(profile);
+            for (allowedApp in allowedAppsForProfile) {
+                allowedAppPackageNames.add(allowedApp.packageName)
+            }
+        }
+        allowedAppPackageNames
+    }
+}
+
+suspend fun applyProfileFilter(appList: MutableList<AppModel>, profileAllowedApps: MutableSet<String>): MutableList<AppModel> {
+    return withContext(Dispatchers.IO) {
+        val filteredAppList: MutableList<AppModel> = mutableListOf()
+        for (app in appList) {
+            if (profileAllowedApps.contains(app.appPackage)) {
+                filteredAppList.add(app)
+            }
+        }
+        filteredAppList
+    }
 }
 
 suspend fun getAppsList(
@@ -505,3 +639,4 @@ fun Context.rateApp() {
     intent.addFlags(flags)
     startActivity(intent)
 }
+

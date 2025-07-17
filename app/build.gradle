@@ -1,6 +1,10 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
 
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'org.jetbrains.kotlin.android'
+    id 'androidx.navigation.safeargs.kotlin'
+}
 android {
 
     namespace "app.joelauncher"
@@ -64,5 +68,8 @@ dependencies {
 
     //Material dependency
     implementation libs.material
+    implementation libs.room.common.jvm
+    implementation libs.room.runtime.android
 
 }
+

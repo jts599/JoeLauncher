@@ -53,6 +53,74 @@
             app:exitAnim="@anim/fade_exit"
             app:popEnterAnim="@anim/fade_enter"
             app:popExitAnim="@anim/fade_exit" />
+        <action
+            android:id="@+id/action_settingsFragment_to_multiSelectFragment"
+            app:destination="@id/multiSelectFragment"
+            app:enterAnim="@anim/fade_enter"
+            app:exitAnim="@anim/fade_exit"
+            app:popEnterAnim="@anim/fade_enter"
+            app:popExitAnim="@anim/fade_exit" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/multiSelectFragment"
+        android:name="app.joelauncher.ui.MultiSelectFragment"
+        android:label="Select Items"
+        tools:layout="@layout/fragment_multi_select"> 
+
+        <action
+            android:id="@+id/action_multiSelectFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment"
+            app:enterAnim="@anim/fade_enter"
+            app:exitAnim="@anim/fade_exit"
+            app:popEnterAnim="@anim/fade_enter"
+            app:popExitAnim="@anim/fade_exit" />
+        
+    </fragment>
+
+    <fragment
+        android:id="@+id/profileListFragment"
+        android:name="app.joelauncher.ui.ProfileListFragment"
+        android:label="Profiles" 
+        tools:layout="@layout/fragment_profile_list" >
+        <action
+            android:id="@+id/action_profileListFragment_to_profileEditFragment"
+            app:destination="@id/profileEditFragment" />
+        <action
+            android:id="@+id/action_profileListFragment_to_profileOverrideFragment"
+            app:destination="@id/profileOverrideFragment" />
+        <!-- Action to create a NEW profile (goes to ProfileEditFragment without an ID) -->
+        <action
+            android:id="@+id/action_profileListFragment_to_profileEditFragment_new"
+            app:destination="@id/profileEditFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/profileEditFragment"
+        android:name="app.joelauncher.ui.ProfileEditFragment" 
+        android:label="Edit Profile"
+        tools:layout="@layout/fragment_profile_edit" >
+        <argument
+            android:name="profileId"
+            app:argType="long"
+            android:defaultValue="-1L" /> <!-- -1L or 0L to indicate a new profile -->
+        <!-- Action to navigate to MultiSelectFragment -->
+        <action
+            android:id="@+id/action_profileEditFragment_to_multiSelectFragment"
+            app:destination="@id/multiSelectFragment" /> <!-- Assuming multiSelectFragment ID -->
+    </fragment>
+
+    <fragment
+        android:id="@+id/profileOverrideFragment"
+        android:name="app.joelauncher.ui.ProfileOverrideFragment" 
+        android:label="Override Profile"
+        tools:layout="@layout/fragment_profile_override" >
+        <argument
+            android:name="profileId"
+            app:argType="long" /> 
+        <argument
+            android:name="profileName"
+            app:argType="string" /> 
     </fragment>
 
 </navigation>
