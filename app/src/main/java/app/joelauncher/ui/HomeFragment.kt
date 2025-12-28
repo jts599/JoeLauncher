@@ -29,6 +29,8 @@ import app.joelauncher.data.AppModel
 import app.joelauncher.data.Constants
 import app.joelauncher.data.Prefs
 import app.joelauncher.databinding.FragmentHomeBinding
+import app.joelauncher.helper.AppSearchSettings
+import app.joelauncher.helper.anyBackgroundUpdateEnabled
 import app.joelauncher.helper.appUsagePermissionGranted
 import app.joelauncher.helper.dpToPx
 import app.joelauncher.helper.expandNotificationDrawer
@@ -175,8 +177,8 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         }
         viewModel.isOlauncherDefault.observe(viewLifecycleOwner, Observer {
             if (it != true) {
-                if (prefs.dailyWallpaper) {
-                    prefs.dailyWallpaper = false
+                if (anyBackgroundUpdateEnabled(prefs)) {
+                    //Cancel wallpaper worker will also disable the setting
                     viewModel.cancelWallpaperWorker()
                 }
                 prefs.homeBottomAlignment = false
@@ -392,24 +394,33 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     }
 
     private fun showAppList(flag: Int, rename: Boolean = false, includeHiddenApps: Boolean = false) {
-        viewModel.getAppList(includeHiddenApps)
-        try {
-            findNavController().navigate(
-                R.id.action_mainFragment_to_appListFragment,
-                bundleOf(
-                    Constants.Key.FLAG to flag,
-                    Constants.Key.RENAME to rename
-                )
-            )
-        } catch (e: Exception) {
-            findNavController().navigate(
-                R.id.appListFragment,
-                bundleOf(
-                    Constants.Key.FLAG to flag,
-                    Constants.Key.RENAME to rename
-                )
-            )
-            e.printStackTrace()
+        val onResult: (List<AppModel>) -> Unit = { apps ->
+            if (apps.isNotEmpty()) {
+                try {
+                    findNavController().navigate(
+                        R.id.action_mainFragment_to_appListFragment,
+                        bundleOf(
+                            Constants.Key.FLAG to flag,
+                            Constants.Key.RENAME to rename
+                        )
+                    )
+                } catch (e: Exception) {
+                    findNavController().navigate(
+                        R.id.appListFragment,
+                        bundleOf(
+                            Constants.Key.FLAG to flag,
+                            Constants.Key.RENAME to rename
+                        )
+                    )
+                    e.printStackTrace()
+                }
+            }
+        }
+
+        if (flag == Constants.FLAG_LAUNCH_APP) {
+            viewModel.getAppListCore(AppSearchSettings(appFilterEnabled = true, includeHidden = includeHiddenApps), onResult)
+        } else {
+            viewModel.getAppList(includeHiddenApps, onResult)
         }
     }
 
@@ -480,13 +491,13 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     }
 
     private fun changeAppTheme() {
-        if (prefs.dailyWallpaper.not()) return
+        if (!anyBackgroundUpdateEnabled(prefs)) return
         val changedAppTheme = getChangedAppTheme(requireContext(), prefs.appTheme)
         prefs.appTheme = changedAppTheme
-        if (prefs.dailyWallpaper) {
-            setPlainWallpaperByTheme(requireContext(), changedAppTheme)
-            viewModel.setWallpaperWorker()
-        }
+
+        setPlainWallpaperByTheme(requireContext(), changedAppTheme)
+        viewModel.setWallpaperWorker()
+
         requireActivity().recreate()
     }
 
@@ -532,7 +543,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
             override fun onSwipeUp() {
                 super.onSwipeUp()
-                //showAppList(Constants.FLAG_LAUNCH_APP)
+                showAppList(Constants.FLAG_LAUNCH_APP)
             }
 
             override fun onSwipeDown() {

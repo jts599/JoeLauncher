@@ -143,9 +143,9 @@ class Prefs(context: Context) {
         get() = prefs.getBoolean(KEYBOARD_MESSAGE, false)
         set(value) = prefs.edit().putBoolean(KEYBOARD_MESSAGE, value).apply()
 
-    var dailyWallpaper: Boolean
-        get() = prefs.getBoolean(DAILY_WALLPAPER, false)
-        set(value) = prefs.edit().putBoolean(DAILY_WALLPAPER, value).apply()
+    var dailyWallpaper: String
+        get() = prefs.getString(DAILY_WALLPAPER, "").toString()
+        set(value) = prefs.edit().putString(DAILY_WALLPAPER, value).apply()
 
     var dailyWallpaperUrl: String
         get() = prefs.getString(DAILY_WALLPAPER_URL, "").toString()

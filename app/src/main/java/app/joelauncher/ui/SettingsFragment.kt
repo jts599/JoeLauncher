@@ -26,15 +26,23 @@ import app.joelauncher.R
 import app.joelauncher.data.Constants
 import app.joelauncher.data.Prefs
 import app.joelauncher.databinding.FragmentSettingsBinding
+import app.joelauncher.helper.BackgroundSettings
+import app.joelauncher.helper.allowAccessForNMins
 import app.joelauncher.helper.animateAlpha
+import app.joelauncher.helper.anyBackgroundUpdateEnabled
 import app.joelauncher.helper.appUsagePermissionGranted
+import app.joelauncher.helper.disableAccess
 import app.joelauncher.helper.getColorFromAttr
+import app.joelauncher.helper.getCurrentBackgroundSettings
+import app.joelauncher.helper.getExiryTime
+import app.joelauncher.helper.isAccessCurrentlyEnabled
 import app.joelauncher.helper.isAccessServiceEnabled
 import app.joelauncher.helper.isDarkThemeOn
 import app.joelauncher.helper.isOlauncherDefault
 import app.joelauncher.helper.openAppInfo
 import app.joelauncher.helper.openUrl
 import app.joelauncher.helper.rateApp
+import app.joelauncher.helper.setCurrentBackgroundSettings
 import app.joelauncher.helper.setPlainWallpaper
 import app.joelauncher.helper.shareApp
 import app.joelauncher.helper.showToast
@@ -81,6 +89,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         populateSwipeApps()
         populateSwipeDownAction()
         populateActionHints()
+        updateAccessStrings()
         initClickListeners()
         initObservers()
     }
@@ -103,8 +112,22 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             R.id.toggleLock -> toggleLockMode()
             R.id.autoShowKeyboard -> toggleKeyboardText()
             R.id.homeAppsNum -> binding.appsNumSelectLayout.visibility = View.VISIBLE
+
+            //Daily Wallpaper
             R.id.dailyWallpaperUrl -> requireContext().openUrl(prefs.dailyWallpaperUrl)
-            R.id.dailyWallpaper -> toggleDailyWallpaperUpdate()
+            R.id.dailyWallpaper -> selectNewBackgroundOption()
+            R.id.dailyWallpaperNone -> selectNewDailyWallpaperOption(view.id, prefs)
+            R.id.dailyWallpaperBoth -> selectNewDailyWallpaperOption(view.id, prefs)
+            R.id.dailyWallpaperHome -> selectNewDailyWallpaperOption(view.id, prefs)
+            R.id.dailyWallpaperLock -> selectNewDailyWallpaperOption(view.id, prefs)
+
+            //Access Control
+            R.id.accessEnabled -> disableAccessIfCurrentlyEnabled()
+            R.id.t_10m -> onSelectAllowLength(10)
+            R.id.t_1h -> onSelectAllowLength(60)
+            R.id.t_24h -> onSelectAllowLength(24*60)
+
+            //Other
             R.id.alignment -> binding.alignmentSelectLayout.visibility = View.VISIBLE
             R.id.alignmentLeft -> viewModel.updateHomeAlignment(Gravity.START)
             R.id.alignmentCenter -> viewModel.updateHomeAlignment(Gravity.CENTER)
@@ -176,7 +199,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
                 requireContext().showToast(getString(R.string.alignment_changed))
             }
 
-            R.id.dailyWallpaper -> removeWallpaper()
             R.id.appThemeText -> {
                 binding.appThemeSelectLayout.visibility = View.VISIBLE
                 binding.themeSystem.visibility = View.VISIBLE
@@ -185,6 +207,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             R.id.swipeLeftApp -> toggleSwipeLeft()
             R.id.swipeRightApp -> toggleSwipeRight()
             R.id.toggleLock -> startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+            R.id.accessEnabled -> binding.enableForHowLongLayout.visibility = View.VISIBLE
         }
         return true
     }
@@ -200,8 +223,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.toggleLock.setOnClickListener(this)
         binding.homeAppsNum.setOnClickListener(this)
         binding.screenTimeOnOff.setOnClickListener(this)
-        binding.dailyWallpaperUrl.setOnClickListener(this)
-        binding.dailyWallpaper.setOnClickListener(this)
         binding.alignment.setOnClickListener(this)
         binding.alignmentLeft.setOnClickListener(this)
         binding.alignmentCenter.setOnClickListener(this)
@@ -251,12 +272,25 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.textSize6.setOnClickListener(this)
         binding.textSize7.setOnClickListener(this)
 
-        binding.dailyWallpaper.setOnLongClickListener(this)
+
         binding.alignment.setOnLongClickListener(this)
         binding.appThemeText.setOnLongClickListener(this)
         binding.swipeLeftApp.setOnLongClickListener(this)
         binding.swipeRightApp.setOnLongClickListener(this)
         binding.toggleLock.setOnLongClickListener(this)
+
+        binding.dailyWallpaper.setOnClickListener(this)
+        binding.dailyWallpaperUrl.setOnClickListener(this)
+        binding.dailyWallpaperBoth.setOnClickListener(this)
+        binding.dailyWallpaperHome.setOnClickListener(this)
+        binding.dailyWallpaperLock.setOnClickListener(this)
+        binding.dailyWallpaperNone.setOnClickListener(this)
+
+        binding.accessEnabled.setOnClickListener(this)
+        binding.accessEnabled.setOnLongClickListener(this)
+        binding.t10m.setOnClickListener(this)
+        binding.t1h.setOnClickListener(this)
+        binding.t24h.setOnClickListener(this)
     }
 
     private fun initObservers() {
@@ -421,25 +455,64 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         }
     }
 
-    private fun removeWallpaper() {
-        setPlainWallpaper(requireContext(), android.R.color.black)
-        if (!prefs.dailyWallpaper) return
-        prefs.dailyWallpaper = false
-        populateWallpaperText()
-        viewModel.cancelWallpaperWorker()
+
+    /**
+     * Shows or hides the background update selector
+     */
+    private fun showHideBackgroundUpdateSelector(visible: Boolean) {
+        binding.backgroundUpdateSelectLayout.visibility = if (visible) View.VISIBLE else View.GONE
     }
 
-    private fun toggleDailyWallpaperUpdate() {
-        if (prefs.dailyWallpaper.not() && viewModel.isOlauncherDefault.value == false) {
+    /**
+     * Shows the selector to select a new background option
+     */
+    private fun selectNewBackgroundOption() {
+        if (viewModel.isOlauncherDefault.value == false) {
             requireContext().showToast(R.string.set_as_default_launcher_first)
             return
         }
-        prefs.dailyWallpaper = !prefs.dailyWallpaper
+        showHideBackgroundUpdateSelector(true)
+    }
+
+    /**
+     * Sets the proper settings for the selected option
+     */
+    private fun selectNewDailyWallpaperOption(selectedOptionId: Int, prefs: Prefs){
+        val newOptions = getBackgroundSettingsForSelectedOption(selectedOptionId)
+        setCurrentBackgroundSettings(
+            newOptions,
+            prefs
+        )
         populateWallpaperText()
-        if (prefs.dailyWallpaper) {
+        if (anyBackgroundUpdateEnabled(prefs)){
             viewModel.setWallpaperWorker()
             showWallpaperToasts()
-        } else viewModel.cancelWallpaperWorker()
+        }
+        else {
+            viewModel.cancelWallpaperWorker()
+        }
+        showHideBackgroundUpdateSelector(false)
+    }
+
+    /**
+     * Get the background settings object for the selected option
+     */
+    private fun getBackgroundSettingsForSelectedOption(selectedOptionId: Int): BackgroundSettings{
+        when (selectedOptionId) {
+            R.id.dailyWallpaperBoth -> return BackgroundSettings(
+                autoUpdateLockScreen = true,
+                autoUpdateHomescreen = true
+            )
+            R.id.dailyWallpaperHome -> return BackgroundSettings(
+                autoUpdateLockScreen = false,
+                autoUpdateHomescreen = true
+            )
+            R.id.dailyWallpaperLock -> return BackgroundSettings(
+                autoUpdateLockScreen = true,
+                autoUpdateHomescreen = false
+            )
+            else -> return BackgroundSettings(autoUpdateLockScreen = false, autoUpdateHomescreen = false)
+        }
     }
 
     private fun showWallpaperToasts() {
@@ -481,7 +554,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
 
     private fun setAppTheme(theme: Int) {
         if (AppCompatDelegate.getDefaultNightMode() == theme) return
-        if (prefs.dailyWallpaper) {
+        if (anyBackgroundUpdateEnabled(prefs)) {
             setPlainWallpaper(theme)
             viewModel.setWallpaperWorker()
         }
@@ -534,8 +607,15 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     }
 
     private fun populateWallpaperText() {
-        if (prefs.dailyWallpaper) binding.dailyWallpaper.text = getString(R.string.on)
-        else binding.dailyWallpaper.text = getString(R.string.off)
+        val currentSettings = getCurrentBackgroundSettings(prefs)
+        if (currentSettings.autoUpdateHomescreen && currentSettings.autoUpdateLockScreen)
+            binding.dailyWallpaper.text = getString(R.string.dailyWallpaperBoth)
+        else if (currentSettings.autoUpdateHomescreen)
+            binding.dailyWallpaper.text = getString(R.string.dailyWallpaperHome)
+        else if (currentSettings.autoUpdateLockScreen)
+            binding.dailyWallpaper.text = getString(R.string.dailyWallpaperLock)
+        else
+            binding.dailyWallpaper.text = getString(R.string.dailyWallpaperNone)
     }
 
     private fun updateHomeBottomAlignment() {
@@ -633,24 +713,36 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         }
     }
 
-    /**REGION: Daily Wallpaper*/
-    private fun onLongHoldDailyWallpaper() {
-
-    }
-
-    private fun onSelectWhichDailyWallpaper(selectedOptionId: String) {
-
-    }
-    /**END REGION: Daily Wallpaper*/
-
-
-    /**REGION: Access Control*/
-    private fun onPressAccessEnabled() {
-
-    }
-
+    /**
+     * Handles clicking a time to allow access to apps for n minutes
+     */
     private fun onSelectAllowLength(minsToAllow: Int) {
+        allowAccessForNMins(minsToAllow, prefs)
+        binding.enableForHowLongLayout.visibility = View.GONE
+        updateAccessStrings()
+    }
 
+    /**
+     * Updates all strings that can be changed dynamically
+     * based on the current access controls
+     */
+    private fun updateAccessStrings() {
+        if (isAccessCurrentlyEnabled(prefs)) {
+            binding.tvAccessExpires.text = getExiryTime(prefs)
+            binding.accessEnabled.text = getString(R.string.enabled)
+        } else {
+            binding.tvAccessExpires.text = ""
+            binding.accessEnabled.text = getString(R.string.disabled)
+        }
+    }
+
+    /**
+     * If access is currently enabled, disables it
+     */
+    private fun disableAccessIfCurrentlyEnabled() {
+        if (isAccessCurrentlyEnabled(prefs))
+            disableAccess(prefs)
+        updateAccessStrings()
     }
     /**END REGION: Access Control*/
 

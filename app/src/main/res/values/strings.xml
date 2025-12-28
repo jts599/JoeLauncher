@@ -73,8 +73,13 @@
     <string name="accessDisabled" translatable="false">Disabled</string>
     <string name="accessEnabled" translatable="false">Enabled</string>
     <string name="dailyWallpaperBoth" translatable="false">Both</string>
-    <string name="dailyWallpaperDay" translatable="false">Home</string>
+    <string name="dailyWallpaperHome" translatable="false">Home</string>
     <string name="dailyWallpaperLock" translatable="false">Lock</string>
+    <string name="dailyWallpaperNone" translatable="false">None</string>
+    <string name="t_24h" translatable="false">24h</string>
+    <string name="t_1h" translatable="false">1h</string>
+    <string name="t_10m" translatable="false">10m</string>
+
     <!--End New Access Control strings. Not translated -->
     <string name="theme_mode">Theme mode</string>
     <string name="system_default">System</string>

@@ -15,6 +15,30 @@ data class BackgroundSettings(
 )
 
 /**
+ * Checks if any background updates are enabled in the provided preferences.
+ *
+ * @param prefs The preferences object to check.
+ */
+fun anyBackgroundUpdateEnabled(prefs: Prefs): Boolean {
+    val backgroundSettings = getCurrentBackgroundSettings(prefs)
+    return backgroundSettings.autoUpdateLockScreen || backgroundSettings.autoUpdateHomescreen
+}
+
+/**
+ * Disables all background updates in the provided preferences.
+ *
+ * @param prefs The preferences object in which to disable background updates.
+ */
+fun disableAllBackgroundUpdates(prefs: Prefs) {
+    val newSettings = BackgroundSettings(
+        autoUpdateLockScreen = false,
+        autoUpdateHomescreen = false
+    )
+    setCurrentBackgroundSettings(newSettings, prefs)
+}
+
+
+/**
  * Gets the current background settings from the provided preferences.
  *
  * @param prefs The preferences object from which to retrieve the background settings.

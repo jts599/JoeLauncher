@@ -42,7 +42,7 @@ suspend fun getAppsList(
     val appSearchSettings = AppSearchSettings(
         includeHidden = includeHiddenApps,
         includeRegular = includeRegularApps,
-        appFilterEnabled = isAccessCurrentlyEnabled(prefs)
+        appFilterEnabled = true
     )
     return getAppsListCore(context,prefs,appSearchSettings)
 }
@@ -75,7 +75,7 @@ suspend fun getAppsListCore(
                 for (activity in activities) {
                     val pkg = activity.applicationInfo.packageName
 
-                    if (!isActivityIncluded(pkg, profile, hiddenApps, searchSettings)) continue
+                    if (!isActivityIncluded(pkg, profile, hiddenApps, searchSettings, prefs)) continue
 
                     val appLabelShown = prefs.getAppRenameLabel(pkg).ifBlank { activity.label.toString() }
                     val appModel = AppModel(
@@ -104,10 +104,11 @@ private fun isActivityIncluded(
     packageName: String,
     profile: UserHandle,
     hiddenApps: Set<String>,
-    searchSettings: AppSearchSettings
+    searchSettings: AppSearchSettings,
+    prefs: Prefs
 ): Boolean {
     if (packageName == BuildConfig.APPLICATION_ID) return false
-    if (searchSettings.appFilterEnabled) return false
+    if (searchSettings.appFilterEnabled && !isAccessCurrentlyEnabled(prefs)) return false
 
 
     val key = "$packageName|$profile"

@@ -21,6 +21,8 @@ import app.joelauncher.data.Constants
 import app.joelauncher.data.Prefs
 import app.joelauncher.databinding.ActivityMainBinding
 import app.joelauncher.helper.AppSearchSettings
+import app.joelauncher.helper.BackgroundSettings
+import app.joelauncher.helper.anyBackgroundUpdateEnabled
 import app.joelauncher.helper.getColorFromAttr
 import app.joelauncher.helper.hasBeenDays
 import app.joelauncher.helper.hasBeenHours
@@ -34,6 +36,7 @@ import app.joelauncher.helper.isTablet
 import app.joelauncher.helper.openUrl
 import app.joelauncher.helper.rateApp
 import app.joelauncher.helper.resetLauncherViaFakeActivity
+import app.joelauncher.helper.setCurrentBackgroundSettings
 import app.joelauncher.helper.setPlainWallpaper
 import app.joelauncher.helper.shareApp
 import app.joelauncher.helper.showLauncherSelector
@@ -111,7 +114,7 @@ class MainActivity : AppCompatActivity() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         AppCompatDelegate.setDefaultNightMode(prefs.appTheme)
-        if (prefs.dailyWallpaper && AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM) {
+        if (anyBackgroundUpdateEnabled(prefs) && AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM) {
             setPlainWallpaper()
             viewModel.setWallpaperWorker()
             recreate()
@@ -150,7 +153,10 @@ class MainActivity : AppCompatActivity() {
                     prefs.userState = Constants.UserState.REVIEW
                     showMessageDialog(getString(R.string.did_you_know), getString(R.string.wallpaper_message), getString(R.string.enable)) {
                         binding.messageLayout.visibility = View.GONE
-                        prefs.dailyWallpaper = true
+                        setCurrentBackgroundSettings(BackgroundSettings(
+                            autoUpdateLockScreen = true,
+                            autoUpdateHomescreen = true
+                        ),prefs)
                         viewModel.setWallpaperWorker()
                         showToast(getString(R.string.your_wallpaper_will_update_shortly))
                     }
@@ -231,7 +237,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             Constants.UserState.WALLPAPER -> {
-                if (prefs.wallpaperMsgShown || prefs.dailyWallpaper)
+                if (prefs.wallpaperMsgShown || anyBackgroundUpdateEnabled(prefs))
                     prefs.userState = Constants.UserState.REVIEW
                 else if (isOlauncherDefault(this))
                     viewModel.showDialog.postValue(Constants.Dialog.WALLPAPER)
