@@ -4,8 +4,14 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Letter J centered in adaptive icon safe zone (66dp centered in 108dp) -->
-    <path
-        android:fillColor="#00e1ff"
-        android:pathData="M62,30 L62,68 Q62,78 52,78 Q42,78 42,68 L42,62 L50,62 L50,68 Q50,72 52,72 Q54,72 54,68 L54,30 Z" />
+    <!-- Italic J with cross/serif at top, shorter height -->
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:rotation="12">
+        <!-- J with serif - single unified path to avoid seams -->
+        <path
+            android:fillColor="#00e1ff"
+            android:pathData="M56,34 L66,34 L66,37 L61,37 L61,62 Q61,74 53,74 Q43,74 43,62 L43,56 L48,56 L48,62 Q48,69 53,69 Q56,69 56,62 L56,37 L56,37 Z" />
+    </group>
 </vector>
