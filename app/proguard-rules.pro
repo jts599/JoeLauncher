@@ -19,3 +19,19 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Keep Kotlinx Serialization classes and annotations
+-keepattributes *Annotation*, InnerClasses
+-dontnote kotlinx.serialization.AnnotationsKt
+-keepclassmembers class kotlinx.serialization.json.** {
+    *** Companion;
+}
+-keepclasseswithmembers class kotlinx.serialization.json.** {
+    kotlinx.serialization.KSerializer serializer(...);
+}
+
+# Keep BackgroundSettings for serialization
+-keep class app.joelauncher.helper.BackgroundSettings { *; }
+
+# Keep all @Serializable classes
+-keep @kotlinx.serialization.Serializable class * { *; }
