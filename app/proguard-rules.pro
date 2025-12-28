@@ -23,11 +23,32 @@
 # Keep Kotlinx Serialization classes and annotations
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.AnnotationsKt
+
+# Keep all kotlinx.serialization classes
+-keep class kotlinx.serialization.** { *; }
 -keepclassmembers class kotlinx.serialization.json.** {
     *** Companion;
 }
 -keepclasseswithmembers class kotlinx.serialization.json.** {
     kotlinx.serialization.KSerializer serializer(...);
+}
+
+# Keep serializers for @Serializable classes
+-if @kotlinx.serialization.Serializable class **
+-keepnames class <1>$$serializer {
+    <1>$$serializer INSTANCE;
+}
+
+# Keep the serializer and companion of serializable classes
+-if @kotlinx.serialization.Serializable class ** {
+    static **$Companion Companion;
+}
+-keepnames class <1>$Companion {
+    kotlinx.serialization.KSerializer serializer(...);
+}
+
+-keepclassmembers class **$WhenMappings {
+    <fields>;
 }
 
 # Keep BackgroundSettings for serialization
