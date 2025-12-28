@@ -66,6 +66,16 @@
     <string name="show_date_time">Show date time</string>
     <string name="appearance">Appearance</string>
     <string name="gestures">Gestures</string>
+    <!--New strings. Not translated-->
+    <string name="access" translatable="false">Access</string>
+    <string name="accessExpire" translatable="false">Expires</string>
+    <string name="accessEnabledLabel" translatable="false">Full App Access</string>
+    <string name="accessDisabled" translatable="false">Disabled</string>
+    <string name="accessEnabled" translatable="false">Enabled</string>
+    <string name="dailyWallpaperBoth" translatable="false">Both</string>
+    <string name="dailyWallpaperDay" translatable="false">Home</string>
+    <string name="dailyWallpaperLock" translatable="false">Lock</string>
+    <!--End New Access Control strings. Not translated -->
     <string name="theme_mode">Theme mode</string>
     <string name="system_default">System</string>
     <string name="dark">Dark</string>

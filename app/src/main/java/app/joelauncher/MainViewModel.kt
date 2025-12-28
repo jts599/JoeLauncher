@@ -20,6 +20,7 @@ import androidx.work.WorkManager
 import app.joelauncher.data.AppModel
 import app.joelauncher.data.Constants
 import app.joelauncher.data.Prefs
+import app.joelauncher.helper.AppSearchSettings
 import app.joelauncher.helper.AppUsageStats
 import app.joelauncher.helper.AppUsageStatsBucket
 import app.joelauncher.helper.SingleLiveEvent
@@ -27,6 +28,7 @@ import app.joelauncher.helper.WallpaperWorker
 import app.joelauncher.helper.convertEpochToMidnight
 import app.joelauncher.helper.formattedTimeSpent
 import app.joelauncher.helper.getAppsList
+import app.joelauncher.helper.getAppsListCore
 import app.joelauncher.helper.hasBeenMinutes
 import app.joelauncher.helper.isOlauncherDefault
 import app.joelauncher.helper.showToast
@@ -206,9 +208,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun getAppList(includeHiddenApps: Boolean = false) {
+    fun getAppListCore(searchSettings: AppSearchSettings) {
         viewModelScope.launch {
-            appList.value = getAppsList(appContext, prefs, includeRegularApps = true, includeHiddenApps)
+            appList.value = getAppsListCore(appContext, prefs, searchSettings)
+        }
+    }
+    fun getAppList(includeHiddenApps: Boolean = false) {
+        val searchSettings = AppSearchSettings(
+            includeHidden = includeHiddenApps
+        )
+        viewModelScope.launch {
+            appList.value = getAppsListCore(appContext, prefs, searchSettings)
         }
     }
 

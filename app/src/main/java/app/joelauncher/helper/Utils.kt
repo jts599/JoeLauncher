@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.LauncherApps
+import android.content.pm.LauncherActivityInfo
 import android.content.res.Configuration
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.graphics.Bitmap
@@ -63,73 +64,7 @@ fun Context.showToast(stringResource: Int, duration: Int = Toast.LENGTH_SHORT) {
     Toast.makeText(this, getString(stringResource), duration).show()
 }
 
-suspend fun getAppsList(
-    context: Context,
-    prefs: Prefs,
-    includeRegularApps: Boolean = true,
-    includeHiddenApps: Boolean = false,
-): MutableList<AppModel> {
-    return withContext(Dispatchers.IO) {
-        val appList: MutableList<AppModel> = mutableListOf()
 
-        try {
-            if (!Prefs(context).hiddenAppsUpdated) upgradeHiddenApps(Prefs(context))
-            val hiddenApps = Prefs(context).hiddenApps
-
-            val userManager = context.getSystemService(Context.USER_SERVICE) as UserManager
-            val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
-            val collator = Collator.getInstance()
-
-            for (profile in userManager.userProfiles) {
-                for (app in launcherApps.getActivityList(null, profile)) {
-
-                    val appLabelShown = prefs.getAppRenameLabel(app.applicationInfo.packageName).ifBlank { app.label.toString() }
-                    val appModel = AppModel(
-                        appLabelShown,
-                        collator.getCollationKey(app.label.toString()),
-                        app.applicationInfo.packageName,
-                        app.componentName.className,
-                        (System.currentTimeMillis() - app.firstInstallTime) < Constants.ONE_HOUR_IN_MILLIS,
-                        profile
-                    )
-
-                    // if the current app is not OLauncher
-                    if (app.applicationInfo.packageName != BuildConfig.APPLICATION_ID) {
-                        // is this a hidden app?
-                        if (hiddenApps.contains(app.applicationInfo.packageName + "|" + profile.toString())) {
-                            if (includeHiddenApps) {
-                                appList.add(appModel)
-                            }
-                        } else {
-                            // this is a regular app
-                            if (includeRegularApps) {
-                                appList.add(appModel)
-                            }
-                        }
-                    }
-                }
-            }
-            appList.sortBy { it.appLabel.lowercase() }
-
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        appList
-    }
-}
-
-// This is to ensure backward compatibility with older app versions
-// which did not support multiple user profiles
-private fun upgradeHiddenApps(prefs: Prefs) {
-    val hiddenAppsSet = prefs.hiddenApps
-    val newHiddenAppsSet = mutableSetOf<String>()
-    for (hiddenPackage in hiddenAppsSet) {
-        if (hiddenPackage.contains("|")) newHiddenAppsSet.add(hiddenPackage)
-        else newHiddenAppsSet.add(hiddenPackage + android.os.Process.myUserHandle().toString())
-    }
-    prefs.hiddenApps = newHiddenAppsSet
-    prefs.hiddenAppsUpdated = true
-}
 
 fun isPackageInstalled(context: Context, packageName: String, userString: String): Boolean {
     val launcher = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
@@ -261,7 +196,7 @@ suspend fun getWallpaperBitmap(originalImage: Bitmap, width: Int, height: Int): 
     }
 }
 
-suspend fun setWallpaper(appContext: Context, url: String): Boolean {
+suspend fun setWallpaper(appContext: Context, url: String, backgroundSettings: BackgroundSettings): Boolean {
     return withContext(Dispatchers.IO) {
         val originalImageBitmap = getBitmapFromURL(url) ?: return@withContext false
         if (appContext.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE && isTablet(appContext).not())
@@ -272,8 +207,7 @@ suspend fun setWallpaper(appContext: Context, url: String): Boolean {
         val scaledBitmap = getWallpaperBitmap(originalImageBitmap, width, height)
 
         try {
-            wallpaperManager.setBitmap(scaledBitmap, null, false, WallpaperManager.FLAG_SYSTEM)
-            wallpaperManager.setBitmap(scaledBitmap, null, false, WallpaperManager.FLAG_LOCK)
+            setWallpaperCore(wallpaperManager,scaledBitmap,backgroundSettings)
         } catch (e: Exception) {
             return@withContext false
         }
@@ -285,6 +219,17 @@ suspend fun setWallpaper(appContext: Context, url: String): Boolean {
             e.printStackTrace()
         }
         true
+    }
+}
+
+suspend fun setWallpaperCore(wallpaperManager: WallpaperManager, bitmap: Bitmap, backgroundSettings: BackgroundSettings) {
+    val tryHomeScreen = backgroundSettings.autoUpdateHomescreen
+    val tryLockScreen = backgroundSettings.autoUpdateLockScreen
+    try {
+        if (tryHomeScreen) wallpaperManager.setBitmap(bitmap, null, false, WallpaperManager.FLAG_SYSTEM)
+        if (tryLockScreen) wallpaperManager.setBitmap(bitmap, null, false, WallpaperManager.FLAG_LOCK)
+    } catch (e: Exception) {
+        throw Exception("Unable to set wallpaper")
     }
 }
 
@@ -395,7 +340,11 @@ fun openCalendar(context: Context) {
         try {
             val intent = Intent(Intent.ACTION_MAIN)
             intent.addCategory(Intent.CATEGORY_APP_CALENDAR)
-            context.startActivity(intent)
+            val resolveInfo = context.packageManager.resolveActivity(intent, 0)
+            if (resolveInfo != null) {
+                intent.setClassName(resolveInfo.activityInfo.packageName, resolveInfo.activityInfo.name)
+                context.startActivity(intent)
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }

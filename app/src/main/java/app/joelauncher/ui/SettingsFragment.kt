@@ -610,7 +610,8 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             requireContext().showToast(getString(R.string.long_press_to_enable))
             return
         }
-        viewModel.getAppList(true)
+
+        viewModel.getAppList(true,)
         findNavController().navigate(
             R.id.action_settingsFragment_to_appListFragment,
             bundleOf(Constants.Key.FLAG to flag)
@@ -631,6 +632,27 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             viewModel.showDialog.postValue(Constants.Dialog.PRO_MESSAGE)
         }
     }
+
+    /**REGION: Daily Wallpaper*/
+    private fun onLongHoldDailyWallpaper() {
+
+    }
+
+    private fun onSelectWhichDailyWallpaper(selectedOptionId: String) {
+
+    }
+    /**END REGION: Daily Wallpaper*/
+
+
+    /**REGION: Access Control*/
+    private fun onPressAccessEnabled() {
+
+    }
+
+    private fun onSelectAllowLength(minsToAllow: Int) {
+
+    }
+    /**END REGION: Access Control*/
 
     override fun onDestroyView() {
         super.onDestroyView()

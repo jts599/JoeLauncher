@@ -4,6 +4,10 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.view.Gravity
 import androidx.appcompat.app.AppCompatDelegate
+import java.text.DateFormat
+import java.time.Instant
+import java.time.Instant.parse
+import java.util.Date
 
 class Prefs(context: Context) {
     private val PREFS_FILENAME = "app.olauncher"
@@ -88,6 +92,8 @@ class Prefs(context: Context) {
     private val CALENDAR_APP_PACKAGE = "CALENDAR_APP_PACKAGE"
     private val CALENDAR_APP_USER = "CALENDAR_APP_USER"
     private val CALENDAR_APP_CLASS_NAME = "CALENDAR_APP_CLASS_NAME"
+    private val APP_ENABLED_EXPIRY = "APP_ENABLED_EXPIRY"
+    private val BACKGROUND_SETTINGS = "BACKGROUND_SETTINGS"
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_FILENAME, 0);
 
@@ -102,6 +108,20 @@ class Prefs(context: Context) {
     var firstSettingsOpen: Boolean
         get() = prefs.getBoolean(FIRST_SETTINGS_OPEN, true)
         set(value) = prefs.edit().putBoolean(FIRST_SETTINGS_OPEN, value).apply()
+
+    var appEnabledExpiry: Instant?
+        get() {
+            val expiryString = prefs.getString(APP_ENABLED_EXPIRY, null)
+            return expiryString?.let { parse(it) }
+        }
+        set(value) {
+            val expiryString = value?.toString()
+            prefs.edit().putString(APP_ENABLED_EXPIRY, expiryString).apply()
+        }
+
+    var backgroundSettings: String?
+        get() = prefs.getString(BACKGROUND_SETTINGS, null)
+        set(value) = prefs.edit().putString(BACKGROUND_SETTINGS, value).apply()
 
     var firstHide: Boolean
         get() = prefs.getBoolean(FIRST_HIDE, true)

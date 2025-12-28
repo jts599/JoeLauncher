@@ -23,7 +23,7 @@ class WallpaperWorker(appContext: Context, workerParams: WorkerParameters) : Cor
                     true
                 else {
                     prefs.dailyWallpaperUrl = wallpaperUrl
-                    setWallpaper(applicationContext, wallpaperUrl)
+                    setWallpaper(applicationContext, wallpaperUrl, getCurrentBackgroundSettings())
                 }
             } else
                 true

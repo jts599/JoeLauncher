@@ -20,6 +20,7 @@ import androidx.navigation.Navigation
 import app.joelauncher.data.Constants
 import app.joelauncher.data.Prefs
 import app.joelauncher.databinding.ActivityMainBinding
+import app.joelauncher.helper.AppSearchSettings
 import app.joelauncher.helper.getColorFromAttr
 import app.joelauncher.helper.hasBeenDays
 import app.joelauncher.helper.hasBeenHours
@@ -81,7 +82,7 @@ class MainActivity : AppCompatActivity() {
 
         initClickListeners()
         initObservers(viewModel)
-        viewModel.getAppList()
+        viewModel.getAppListCore(AppSearchSettings(appFilterEnabled = true))
         setupOrientation()
 
         window.addFlags(FLAG_LAYOUT_NO_LIMITS)
