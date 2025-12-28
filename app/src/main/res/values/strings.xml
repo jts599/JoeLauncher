@@ -79,6 +79,7 @@
     <string name="t_24h" translatable="false">24h</string>
     <string name="t_1h" translatable="false">1h</string>
     <string name="t_10m" translatable="false">10m</string>
+    <string name="clickDisabledToast" translatable="false">Long press to enable</string>
 
     <!--End New Access Control strings. Not translated -->
     <string name="theme_mode">Theme mode</string>

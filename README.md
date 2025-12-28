@@ -1,33 +1,41 @@
-![Olauncher](https://repository-images.githubusercontent.com/278638069/db0acb80-661b-11eb-803e-926cae5dccb4)
+# JoeLauncher
 
+A custom fork of [Olauncher](https://github.com/tanujnotes/Olauncher) — the minimal, ad-free Android launcher.
 
-# Olauncher | Minimal AF Launcher
-AF stands for Ad-Free :D
+> For full documentation about the base launcher, visit the [Olauncher GitHub repo](https://github.com/tanujnotes/Olauncher).
 
+---
+
+## What's Different in JoeLauncher?
+
+### 1. Hidden Apps by Default
+
+Only apps pinned to your home screen are visible by default. All other apps are hidden from the app drawer.
+
+You can temporarily enable access to all apps in the settings menu when needed.
+
+<!-- TODO: Add screenshot -->
+![Hidden apps setting](screenshots/hidden-apps-setting.png)
+
+### 2. Separate Wallpaper Control
+
+Olauncher has a daily wallpaper feature that automatically updates your wallpaper to a new image every day.
+
+JoeLauncher extends this by letting you choose **where** the daily wallpaper is applied:
+- **Both** (home screen + lock screen) — original behavior
+- **Home screen only**
+- **Lock screen only**
+
+---
 
 ## Install
 
-#### Install from [F-Droid](https://f-droid.org/packages/app.olauncher) or [Play Store](https://play.google.com/store/apps/details?id=app.olauncher) or download the APK from the [latest release](https://github.com/tanujnotes/Olauncher/releases/).
+Download the APK from the [latest release](https://github.com/yourusername/JoeLauncher/releases/).
 
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
-    alt="Get it on F-Droid"
-    height="80">](https://f-droid.org/packages/app.olauncher)
-[<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
-    alt="Get it on Play Store"
-    height="80">](https://play.google.com/store/apps/details?id=app.olauncher)
+---
 
-To maintain the simplicity of the launcher, a few niche features are available but hidden.
+## License
 
-Please check out the [About](https://tanujnotes.substack.com/p/olauncher-minimal-af-launcher?utm_source=github) page in the Olauncher settings for a complete list of features and FAQs.
+[GNU GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-##
-
-License: [GNU GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
-
-@tanujnotes | [X/Twitter](https://twitter.com/tanujnotes) | [Bluesky](https://bsky.app/profile/tanujnotes.bsky.social)
-
-**[See my other apps](https://play.google.com/store/apps/dev?id=7198807840081074933)**
-
-##
-
-*New: We're working on an open source notes app called Note Safe (previously Note to Self). What's cool about it - it has a chat like interface and end-to-end encryption. [Take a look!](https://github.com/jeerovan/ntsapp)*
+Based on [Olauncher](https://github.com/tanujnotes/Olauncher) by [@tanujnotes](https://twitter.com/tanujnotes)

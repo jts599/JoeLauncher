@@ -122,7 +122,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             R.id.dailyWallpaperLock -> selectNewDailyWallpaperOption(view.id, prefs)
 
             //Access Control
-            R.id.accessEnabled -> disableAccessIfCurrentlyEnabled()
+            R.id.accessEnabled -> onAccessEnableDisableClick()
             R.id.t_10m -> onSelectAllowLength(10)
             R.id.t_1h -> onSelectAllowLength(60)
             R.id.t_24h -> onSelectAllowLength(24*60)
@@ -739,10 +739,13 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     /**
      * If access is currently enabled, disables it
      */
-    private fun disableAccessIfCurrentlyEnabled() {
-        if (isAccessCurrentlyEnabled(prefs))
+    private fun onAccessEnableDisableClick() {
+        if (isAccessCurrentlyEnabled(prefs)) {
             disableAccess(prefs)
-        updateAccessStrings()
+            updateAccessStrings()
+        } else {
+            requireContext().showToast(getString(R.string.clickDisabledToast))
+        }
     }
     /**END REGION: Access Control*/
 
