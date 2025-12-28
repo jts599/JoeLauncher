@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Italic J with cross/serif at top, shorter height -->
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:rotation="12">
+        <!-- J with serif - single unified path to avoid seams -->
+        <path
+            android:fillColor="#00e1ff"
+            android:pathData="M56,34 L66,34 L66,37 L61,37 L61,62 Q61,74 53,74 Q43,74 43,62 L43,56 L48,56 L48,62 Q48,69 53,69 Q56,69 56,62 L56,37 L56,37 Z" />
+    </group>
+</vector>

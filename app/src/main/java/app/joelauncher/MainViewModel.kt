@@ -20,15 +20,19 @@ import androidx.work.WorkManager
 import app.joelauncher.data.AppModel
 import app.joelauncher.data.Constants
 import app.joelauncher.data.Prefs
+import app.joelauncher.helper.AppSearchSettings
 import app.joelauncher.helper.AppUsageStats
 import app.joelauncher.helper.AppUsageStatsBucket
+import app.joelauncher.helper.BackgroundSettings
 import app.joelauncher.helper.SingleLiveEvent
 import app.joelauncher.helper.WallpaperWorker
 import app.joelauncher.helper.convertEpochToMidnight
 import app.joelauncher.helper.formattedTimeSpent
 import app.joelauncher.helper.getAppsList
+import app.joelauncher.helper.getAppsListCore
 import app.joelauncher.helper.hasBeenMinutes
 import app.joelauncher.helper.isOlauncherDefault
+import app.joelauncher.helper.setCurrentBackgroundSettings
 import app.joelauncher.helper.showToast
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
@@ -206,9 +210,37 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun getAppList(includeHiddenApps: Boolean = false) {
+    fun getAppListCore(searchSettings: AppSearchSettings) {
         viewModelScope.launch {
-            appList.value = getAppsList(appContext, prefs, includeRegularApps = true, includeHiddenApps)
+            appList.value = getAppsListCore(appContext, prefs, searchSettings)
+        }
+    }
+
+    fun getAppListCore(searchSettings: AppSearchSettings, onResult: (List<AppModel>) -> Unit) {
+        viewModelScope.launch {
+            val apps = getAppsListCore(appContext, prefs, searchSettings)
+            appList.value = apps
+            onResult(apps)
+        }
+    }
+    
+    fun getAppList(includeHiddenApps: Boolean = false) {
+        val searchSettings = AppSearchSettings(
+            includeHidden = includeHiddenApps
+        )
+        viewModelScope.launch {
+            appList.value = getAppsListCore(appContext, prefs, searchSettings)
+        }
+    }
+
+    fun getAppList(includeHiddenApps: Boolean = false, onResult: (List<AppModel>) -> Unit) {
+        val searchSettings = AppSearchSettings(
+            includeHidden = includeHiddenApps
+        )
+        viewModelScope.launch {
+            val apps = getAppsListCore(appContext, prefs, searchSettings)
+            appList.value = apps
+            onResult(apps)
         }
     }
 
@@ -245,9 +277,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun cancelWallpaperWorker() {
+        setCurrentBackgroundSettings(BackgroundSettings(
+            autoUpdateHomescreen = false,
+            autoUpdateLockScreen = false
+        ),prefs)
         WorkManager.getInstance(appContext).cancelUniqueWork(Constants.WALLPAPER_WORKER_NAME)
         prefs.dailyWallpaperUrl = ""
-        prefs.dailyWallpaper = false
     }
 
     fun updateHomeAlignment(gravity: Int) {

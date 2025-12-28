@@ -17,6 +17,7 @@ import app.joelauncher.R
 import app.joelauncher.data.Constants
 import app.joelauncher.data.Prefs
 import app.joelauncher.databinding.FragmentAppDrawerBinding
+import app.joelauncher.helper.AppSearchSettings
 import app.joelauncher.helper.hideKeyboard
 import app.joelauncher.helper.isEinkDisplay
 import app.joelauncher.helper.isSystemApp
@@ -158,12 +159,12 @@ class AppDrawerFragment : Fragment() {
                     viewModel.showDialog.postValue(Constants.Dialog.HIDDEN)
                     findNavController().navigate(R.id.action_appListFragment_to_settingsFragment2)
                 }
-                viewModel.getAppList()
+                viewModel.getAppListCore(AppSearchSettings(appFilterEnabled = true))
                 viewModel.getHiddenApps()
             },
             appRenameListener = { appModel, renameLabel ->
                 prefs.setAppRenameLabel(appModel.appPackage, renameLabel)
-                viewModel.getAppList()
+                viewModel.getAppListCore(AppSearchSettings(appFilterEnabled = true))
             }
         )
 
